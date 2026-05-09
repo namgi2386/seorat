@@ -1,0 +1,40 @@
+{
+  "name": "pocket-seorin",
+  "version": "1.0.0",
+  "description": "Always-on-top 3D character overlay",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac"
+  },
+  "build": {
+    "appId": "com.seorin.pocket-seorin",
+    "productName": "pocket seorin",
+    "asar": false,
+    "directories": {
+      "output": "dist"
+    },
+    "extraResources": [
+      {
+        "from": "../3d-assets",
+        "to": "3d-assets"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "../icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "../icon.png"
+    }
+  },
+  "dependencies": {
+    "three": "^0.167.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}
