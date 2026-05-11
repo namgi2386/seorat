@@ -6,7 +6,8 @@
   "scripts": {
     "start": "electron .",
     "build:win": "electron-builder --win",
-    "build:mac": "electron-builder --mac"
+    "build:mac": "electron-builder --mac",
+    "pack:win": "electron-builder --win --dir && powershell Compress-Archive -Path dist/win-unpacked/* -DestinationPath dist/pocket-seorin-win.zip -Force"
   },
   "build": {
     "appId": "com.seorin.pocket-seorin",
@@ -22,7 +23,7 @@
       }
     ],
     "win": {
-      "target": "nsis",
+      "target": "zip",
       "icon": "../icon.png"
     },
     "mac": {
