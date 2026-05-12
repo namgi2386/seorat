@@ -20,6 +20,7 @@ const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
 fillLight.position.set(-2, 1, -1);
 scene.add(fillLight);
 
+// 0:agree  1:boxing  2:running  3:skill  4:walking(기본)
 const GLB_NAMES = [
   'seorin_agree.glb',
   'seorin_boxing.glb',
@@ -27,27 +28,32 @@ const GLB_NAMES = [
   'seorin_skill.glb',
   'seorin_walking.glb',
 ];
+const WALK_INDEX = 4;
+const RUN_INDEX = 2;
+const STOP_INDICES = [0, 1, 3];   // 멈추고 정면 바라보는 애니메이션
+const WALK_SPEED = 0.8;
+const RUN_SPEED = 2.2;
+const SPECIAL_MIN = 3000;          // ms
+const SPECIAL_MAX = 8000;          // ms
 
-const MAX_REPEATS = 3;
 const characters = new Array(GLB_NAMES.length).fill(null);
-let current = 0;
-let repeats = 0;
+let current = WALK_INDEX;
 
-const baseUrl = window.electronAPI.assetsBaseUrl;
+const { screenW, initX, initY } = window.electronAPI;
+let winX = initX;
+let winY = initY;
+let walkDir = 1;
+
+// 'walk' | 'run' | 'stop'
+let mode = 'walk';
+
+let dragging = false;
+let lastMouseX = 0;
+let lastMouseY = 0;
+let specialTimeout = null;
+
 const loader = new GLTFLoader();
-
-function onFinished() {
-  repeats++;
-  if (repeats >= MAX_REPEATS) {
-    repeats = 0;
-    let next;
-    do { next = Math.floor(Math.random() * characters.length); }
-    while (next === current && characters.length > 1);
-    switchTo(next);
-  } else {
-    characters[current].action?.reset().play();
-  }
-}
+const baseUrl = window.electronAPI.assetsBaseUrl;
 
 Promise.all(
   GLB_NAMES.map((name, i) =>
@@ -60,9 +66,9 @@ Promise.all(
 
         if (clip) {
           action = mixer.clipAction(clip);
-          action.setLoop(THREE.LoopOnce, 1);
-          action.clampWhenFinished = true;
-          mixer.addEventListener('finished', onFinished);
+          mixer.addEventListener('finished', () => {
+            if (characters[current]?.mixer === mixer) onSpecialFinished();
+          });
         }
 
         model.visible = false;
@@ -74,7 +80,8 @@ Promise.all(
   )
 ).then(() => {
   setupCamera();
-  switchTo(Math.floor(Math.random() * characters.length));
+  startWalking();
+  scheduleSpecial();
   animate();
 });
 
@@ -92,38 +99,87 @@ function setupCamera() {
   );
   characters.forEach(({ model }) => model.position.add(offset));
 
-  // camera positioned so character fills ~78% of window height
   const fovRad = (camera.fov * Math.PI) / 180;
   const dist = (size.y / 2) / (0.78 * Math.tan(fovRad / 2));
   camera.position.set(0, size.y / 2, dist);
   camera.lookAt(0, size.y / 2, 0);
 }
 
-function switchTo(index) {
+function switchTo(index, loop) {
   characters[current].model.visible = false;
   characters[current].action?.stop();
   current = index;
-  characters[current].model.visible = true;
-  characters[current].action?.reset().play();
+  const { model, action } = characters[current];
+  model.visible = true;
+  if (action) {
+    action.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, loop ? Infinity : 1);
+    action.clampWhenFinished = !loop;
+    action.reset().play();
+  }
 }
 
-// Drag
+// 이동 방향으로 회전 (걷기·달리기)
+function setFacing(dir) {
+  const angle = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
+  characters.forEach(({ model }) => { model.rotation.y = angle; });
+}
+
+// 정면 (동의·복싱·스킬)
+function setForward() {
+  characters.forEach(({ model }) => { model.rotation.y = 0; });
+}
+
+function startWalking() {
+  mode = 'walk';
+  setFacing(walkDir);
+  switchTo(WALK_INDEX, true);
+}
+
+function onSpecialFinished() {
+  startWalking();
+  scheduleSpecial();
+}
+
+function scheduleSpecial() {
+  clearTimeout(specialTimeout);
+  const delay = SPECIAL_MIN + Math.random() * (SPECIAL_MAX - SPECIAL_MIN);
+  specialTimeout = setTimeout(startSpecial, delay);
+}
+
+function startSpecial() {
+  if (dragging) { scheduleSpecial(); return; }
+
+  // running vs stop 랜덤 선택 (running 25%, stop 75%)
+  const allIndices = [RUN_INDEX, ...STOP_INDICES];
+  const idx = allIndices[Math.floor(Math.random() * allIndices.length)];
+
+  if (idx === RUN_INDEX) {
+    mode = 'run';
+    setFacing(walkDir);
+    switchTo(RUN_INDEX, false);
+  } else {
+    mode = 'stop';
+    setForward();
+    switchTo(idx, false);
+  }
+}
+
+// 드래그
 const canvas = renderer.domElement;
-let dragging = false;
-let lastX = 0;
-let lastY = 0;
 
 canvas.addEventListener('mousedown', e => {
   if (e.button !== 0) return;
   dragging = true;
-  lastX = e.screenX;
-  lastY = e.screenY;
+  lastMouseX = e.screenX;
+  lastMouseY = e.screenY;
 });
 window.addEventListener('mousemove', e => {
   if (!dragging) return;
-  window.electronAPI.moveWindow(e.screenX - lastX, e.screenY - lastY);
-  lastX = e.screenX;
-  lastY = e.screenY;
+  winX += e.screenX - lastMouseX;
+  winY += e.screenY - lastMouseY;
+  lastMouseX = e.screenX;
+  lastMouseY = e.screenY;
+  window.electronAPI.setWindowPos(winX, winY);
 });
 window.addEventListener('mouseup', () => { dragging = false; });
 
@@ -132,10 +188,30 @@ canvas.addEventListener('contextmenu', e => {
   window.electronAPI.showContextMenu();
 });
 
-// Render loop
+// 렌더 루프
 const clock = new THREE.Clock();
+
 function animate() {
   requestAnimationFrame(animate);
-  characters[current]?.mixer.update(clock.getDelta());
+  const delta = clock.getDelta();
+
+  if ((mode === 'walk' || mode === 'run') && !dragging) {
+    const speed = mode === 'run' ? RUN_SPEED : WALK_SPEED;
+    winX += walkDir * speed;
+
+    if (winX + W >= screenW) {
+      winX = screenW - W;
+      walkDir = -1;
+      setFacing(walkDir);
+    } else if (winX <= 0) {
+      winX = 0;
+      walkDir = 1;
+      setFacing(walkDir);
+    }
+
+    window.electronAPI.setWindowPos(winX, winY);
+  }
+
+  characters[current]?.mixer.update(delta);
   renderer.render(scene, camera);
 }

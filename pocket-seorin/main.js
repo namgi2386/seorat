@@ -1,9 +1,9 @@
 const { app, BrowserWindow, ipcMain, Menu, screen } = require('electron');
 const path = require('path');
-const { pathToFileURL } = require('url'); // main process에서만 사용
+const { pathToFileURL } = require('url');
 
-const WIN_W = 200;
-const WIN_H = 320;
+const WIN_W = 70;
+const WIN_H = 105;
 
 let win;
 
@@ -13,8 +13,12 @@ function createWindow() {
   const assetsPath = app.isPackaged
     ? path.join(process.resourcesPath, '3d-assets')
     : path.join(__dirname, '..', '3d-assets');
-  process.env.ASSETS_PATH = assetsPath;
+
   process.env.ASSETS_BASE_URL = pathToFileURL(assetsPath).href;
+  process.env.SCREEN_W = String(width);
+  process.env.SCREEN_H = String(height);
+  process.env.WIN_X = String(width - WIN_W - 20);
+  process.env.WIN_Y = String(height - WIN_H - 20);
 
   win = new BrowserWindow({
     width: WIN_W,
@@ -39,9 +43,8 @@ function createWindow() {
 app.whenReady().then(createWindow);
 app.on('window-all-closed', () => app.quit());
 
-ipcMain.on('move-window', (_e, dx, dy) => {
-  const [x, y] = win.getPosition();
-  win.setPosition(x + dx, y + dy);
+ipcMain.on('set-window-pos', (_e, x, y) => {
+  win.setPosition(Math.round(x), Math.round(y));
 });
 
 ipcMain.on('show-context-menu', () => {
