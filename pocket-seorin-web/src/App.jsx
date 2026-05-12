@@ -3,6 +3,7 @@ import styles from './App.module.css';
 import seorinGif from '../assets/seorin-boxing.gif';
 
 const WIN_URL = 'https://github.com/namgi2386/seorat/releases/download/v1.1.0/pocket-seorin-win.zip';
+const MAC_URL = 'https://github.com/namgi2386/seorat/releases/download/v1.1.0/pocket.seorin-1.0.0-arm64.dmg';
 
 export default function App() {
   const [winOpen, setWinOpen] = useState(false);
@@ -13,6 +14,12 @@ export default function App() {
       <header className={styles.hero}>
         <p className={styles.subtitle}>당신의 데스크탑 위에 항상 함께</p>
         <h1 className={styles.title}>pocket seorin</h1>
+        <a
+          href="https://github.com/namgi2386/seorat"
+          className={styles.subtitleLink}
+          target="_blank"
+          rel="noreferrer"
+        >made by imnamgi (깃헙 이동하기)</a>
       </header>
 
       <section className={styles.section}>
@@ -31,13 +38,13 @@ export default function App() {
               <small>zip 압축 해제 후 실행</small>
             </span>
           </a>
-          <button className={`${styles.downloadBtn} ${styles.disabled}`} disabled>
+          <a href={MAC_URL} className={styles.downloadBtn} download>
             <span className={styles.btnIcon}>🍎</span>
             <span>
               <strong>macOS</strong>
-              <small>준비 중</small>
+              <small>Apple Silicon (.dmg)</small>
             </span>
-          </button>
+          </a>
         </div>
       </section>
 
@@ -68,7 +75,7 @@ export default function App() {
             </div>
           )}
 
-          <h3 style={{ marginTop: '2rem' }}>macOS <small style={{ fontWeight: 400, opacity: 0.5 }}>(준비 중)</small></h3>
+          <h3 style={{ marginTop: '2rem' }}>macOS</h3>
           <button
             className={styles.toggleBtn}
             onClick={() => setMacOpen(v => !v)}

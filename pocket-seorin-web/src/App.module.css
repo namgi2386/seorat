@@ -17,6 +17,20 @@
   margin-bottom: 0.75rem;
 }
 
+.subtitleLink {
+  display: block;
+  font-size: 0.85rem;
+  color: #555;
+  letter-spacing: 0.05em;
+  margin-top: 0.5rem;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.subtitleLink:hover {
+  color: #aaa;
+}
+
 .title {
   font-size: 3.2rem;
   font-weight: 800;
