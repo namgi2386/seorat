@@ -1,15 +1,8 @@
 import { useState } from 'react';
 import styles from './App.module.css';
+import seorinGif from '../assets/seorin-boxing.gif';
 
 const WIN_URL = 'https://github.com/namgi2386/seorat/releases/download/v1.0.0/pocket-seorin-win.zip';
-
-const FEATURES = [
-  { icon: '🖥️', text: '데스크탑 위에 항상 최상위로 표시 — 어떤 창을 열어도 사라지지 않음' },
-  { icon: '🎭', text: '5가지 애니메이션 랜덤 재생 — 동의, 복싱, 달리기, 포효, 걷기' },
-  { icon: '🖱️', text: '마우스로 원하는 위치로 자유롭게 이동' },
-  { icon: '⚡', text: '앱 실행 즉시 캐릭터 등장 — 별도 설정 불필요' },
-  { icon: '🪟', text: '투명 배경 — 캐릭터만 화면에 표시' },
-];
 
 export default function App() {
   const [winOpen, setWinOpen] = useState(false);
@@ -20,27 +13,12 @@ export default function App() {
       <header className={styles.hero}>
         <p className={styles.subtitle}>당신의 데스크탑 위에 항상 함께</p>
         <h1 className={styles.title}>pocket seorin</h1>
-        <p className={styles.desc}>
-          항상 최상위로 떠있는 3D 캐릭터 오버레이 앱
-        </p>
       </header>
 
       <section className={styles.section}>
-        <div className={styles.screenshotPlaceholder}>
-          <span>스크린샷 준비 중</span>
+        <div className={styles.gifWrapper}>
+          <img src={seorinGif} alt="pocket seorin 미리보기" className={styles.previewGif} />
         </div>
-      </section>
-
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>기능</h2>
-        <ul className={styles.featureList}>
-          {FEATURES.map((f, i) => (
-            <li key={i} className={styles.featureItem}>
-              <span className={styles.featureIcon}>{f.icon}</span>
-              <span>{f.text}</span>
-            </li>
-          ))}
-        </ul>
       </section>
 
       <section className={styles.section}>
