@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   initX: parseInt(process.env.WIN_X),
   initY: parseInt(process.env.WIN_Y),
   setWindowPos: (x, y) => ipcRenderer.send('set-window-pos', x, y),
+  getWindowPos: () => ipcRenderer.invoke('get-window-pos'),
   showContextMenu: () => ipcRenderer.send('show-context-menu'),
 });

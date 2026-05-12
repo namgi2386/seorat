@@ -47,6 +47,8 @@ ipcMain.on('set-window-pos', (_e, x, y) => {
   win.setPosition(Math.round(x), Math.round(y));
 });
 
+ipcMain.handle('get-window-pos', () => win.getPosition());
+
 ipcMain.on('show-context-menu', () => {
   Menu.buildFromTemplate([
     { label: '종료', click: () => app.quit() },

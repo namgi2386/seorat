@@ -1,5 +1,5 @@
-import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const W = window.innerWidth;
 const H = window.innerHeight;
@@ -22,19 +22,19 @@ scene.add(fillLight);
 
 // 0:agree  1:boxing  2:running  3:skill  4:walking(기본)
 const GLB_NAMES = [
-  "seorin_agree.glb",
-  "seorin_boxing.glb",
-  "seorin_running.glb",
-  "seorin_skill.glb",
-  "seorin_walking.glb",
+  'seorin_agree.glb',
+  'seorin_boxing.glb',
+  'seorin_running.glb',
+  'seorin_skill.glb',
+  'seorin_walking.glb',
 ];
 const WALK_INDEX = 4;
 const RUN_INDEX = 2;
-const STOP_INDICES = [0, 1, 3]; // 멈추고 정면 바라보는 애니메이션
+const STOP_INDICES = [0, 1, 3];
 const WALK_SPEED = 1.3;
 const RUN_SPEED = 2.2;
-const SPECIAL_MIN = 3000; // ms
-const SPECIAL_MAX = 8000; // ms
+const SPECIAL_MIN = 3000;
+const SPECIAL_MAX = 8000;
 
 const characters = new Array(GLB_NAMES.length).fill(null);
 let current = WALK_INDEX;
@@ -43,42 +43,52 @@ const { screenW, initX, initY } = window.electronAPI;
 let winX = initX;
 let winY = initY;
 let walkDir = 1;
-
-// 'walk' | 'run' | 'stop'
-let mode = "walk";
+let mode = 'walk';
 
 let dragging = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
 let specialTimeout = null;
 
+// 창 이동 전송: 30fps 제한 + 중복 제거
+let frameTick = 0;
+let lastSentX = NaN;
+let lastSentY = NaN;
+
+function sendPos(x, y) {
+  const rx = Math.round(x);
+  const ry = Math.round(y);
+  if (rx === lastSentX && ry === lastSentY) return;
+  lastSentX = rx;
+  lastSentY = ry;
+  window.electronAPI.setWindowPos(rx, ry);
+}
+
 const loader = new GLTFLoader();
 const baseUrl = window.electronAPI.assetsBaseUrl;
 
 Promise.all(
-  GLB_NAMES.map(
-    (name, i) =>
-      new Promise((resolve) =>
-        loader.load(`${baseUrl}/${name}`, (gltf) => {
-          const model = gltf.scene;
-          const mixer = new THREE.AnimationMixer(model);
-          const clip = gltf.animations[0];
-          let action = null;
+  GLB_NAMES.map((name, i) =>
+    new Promise(resolve =>
+      loader.load(`${baseUrl}/${name}`, gltf => {
+        const model = gltf.scene;
+        const mixer = new THREE.AnimationMixer(model);
+        const clip = gltf.animations[0];
+        let action = null;
 
-          if (clip) {
-            action = mixer.clipAction(clip);
-            mixer.addEventListener("finished", () => {
-              if (characters[current]?.mixer === mixer) onSpecialFinished();
-            });
-          }
+        if (clip) {
+          action = mixer.clipAction(clip);
+          mixer.addEventListener('finished', () => {
+            if (characters[current]?.mixer === mixer) onSpecialFinished();
+          });
+        }
 
-          model.visible = false;
-          scene.add(model);
-          characters[i] = { model, mixer, action };
-          resolve();
-        }),
-      ),
-  ),
+        // 씬에 추가하지 않음 — switchTo에서 1개씩만 add/remove
+        characters[i] = { model, mixer, action };
+        resolve();
+      })
+    )
+  )
 ).then(() => {
   setupCamera();
   startWalking();
@@ -96,49 +106,48 @@ function setupCamera() {
   const offset = new THREE.Vector3(
     -(box.min.x + size.x / 2),
     -box.min.y,
-    -(box.min.z + size.z / 2),
+    -(box.min.z + size.z / 2)
   );
+  // 모든 모델에 동일한 오프셋 적용 (씬 밖에서도 가능)
   characters.forEach(({ model }) => model.position.add(offset));
 
   const fovRad = (camera.fov * Math.PI) / 180;
-  const dist = size.y / 2 / (0.78 * Math.tan(fovRad / 2));
+  const dist = (size.y / 2) / (0.78 * Math.tan(fovRad / 2));
   camera.position.set(0, size.y / 2, dist);
   camera.lookAt(0, size.y / 2, 0);
 }
 
 function switchTo(index, loop) {
-  characters[current].model.visible = false;
-  characters[current].action?.stop();
+  // 이전 모델 씬에서 제거
+  if (characters[current]) {
+    scene.remove(characters[current].model);
+    characters[current].action?.stop();
+  }
+
   current = index;
   const { model, action } = characters[current];
-  model.visible = true;
+
+  // 새 모델만 씬에 추가
+  scene.add(model);
+
   if (action) {
-    action.setLoop(
-      loop ? THREE.LoopRepeat : THREE.LoopOnce,
-      loop ? Infinity : 1,
-    );
+    action.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, loop ? Infinity : 1);
     action.clampWhenFinished = !loop;
     action.reset().play();
   }
 }
 
-// 이동 방향으로 회전 (걷기·달리기)
 function setFacing(dir) {
   const angle = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
-  characters.forEach(({ model }) => {
-    model.rotation.y = angle;
-  });
+  characters.forEach(({ model }) => { model.rotation.y = angle; });
 }
 
-// 정면 (동의·복싱·스킬)
 function setForward() {
-  characters.forEach(({ model }) => {
-    model.rotation.y = 0;
-  });
+  characters.forEach(({ model }) => { model.rotation.y = 0; });
 }
 
 function startWalking() {
-  mode = "walk";
+  mode = 'walk';
   setFacing(walkDir);
   switchTo(WALK_INDEX, true);
 }
@@ -155,21 +164,17 @@ function scheduleSpecial() {
 }
 
 function startSpecial() {
-  if (dragging) {
-    scheduleSpecial();
-    return;
-  }
+  if (dragging) { scheduleSpecial(); return; }
 
-  // running vs stop 랜덤 선택 (running 25%, stop 75%)
   const allIndices = [RUN_INDEX, ...STOP_INDICES];
   const idx = allIndices[Math.floor(Math.random() * allIndices.length)];
 
   if (idx === RUN_INDEX) {
-    mode = "run";
+    mode = 'run';
     setFacing(walkDir);
     switchTo(RUN_INDEX, false);
   } else {
-    mode = "stop";
+    mode = 'stop';
     setForward();
     switchTo(idx, false);
   }
@@ -178,25 +183,32 @@ function startSpecial() {
 // 드래그
 const canvas = renderer.domElement;
 
-canvas.addEventListener("mousedown", (e) => {
+canvas.addEventListener('mousedown', e => {
   if (e.button !== 0) return;
   dragging = true;
   lastMouseX = e.screenX;
   lastMouseY = e.screenY;
 });
-window.addEventListener("mousemove", (e) => {
+window.addEventListener('mousemove', e => {
   if (!dragging) return;
   winX += e.screenX - lastMouseX;
   winY += e.screenY - lastMouseY;
   lastMouseX = e.screenX;
   lastMouseY = e.screenY;
-  window.electronAPI.setWindowPos(winX, winY);
+  sendPos(winX, winY);
 });
-window.addEventListener("mouseup", () => {
+window.addEventListener('mouseup', async () => {
+  if (!dragging) return;
   dragging = false;
+  // 드래그 후 실제 창 위치로 동기화 (추정값 오차 제거)
+  const [x, y] = await window.electronAPI.getWindowPos();
+  winX = x;
+  winY = y;
+  lastSentX = x;
+  lastSentY = y;
 });
 
-canvas.addEventListener("contextmenu", (e) => {
+canvas.addEventListener('contextmenu', e => {
   e.preventDefault();
   window.electronAPI.showContextMenu();
 });
@@ -207,9 +219,10 @@ const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
+  frameTick++;
 
-  if ((mode === "walk" || mode === "run") && !dragging) {
-    const speed = mode === "run" ? RUN_SPEED : WALK_SPEED;
+  if ((mode === 'walk' || mode === 'run') && !dragging) {
+    const speed = mode === 'run' ? RUN_SPEED : WALK_SPEED;
     winX += walkDir * speed;
 
     if (winX + W >= screenW) {
@@ -222,7 +235,10 @@ function animate() {
       setFacing(walkDir);
     }
 
-    window.electronAPI.setWindowPos(winX, winY);
+    // 30fps로 제한 (매 2프레임마다 1회 전송)
+    if (frameTick % 2 === 0) {
+      sendPos(winX, winY);
+    }
   }
 
   characters[current]?.mixer.update(delta);
