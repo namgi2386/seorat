@@ -25,6 +25,10 @@ function createWindow() {
   process.env.WIN_X = String(width - w - 20);
   process.env.WIN_Y = String(height - h - 20);
 
+  const iconPath = app.isPackaged
+    ? path.join(__dirname, 'icon.png')
+    : path.join(__dirname, '..', 'icon.png');
+
   win = new BrowserWindow({
     width: w,
     height: h,
@@ -35,6 +39,7 @@ function createWindow() {
     alwaysOnTop: true,
     resizable: false,
     skipTaskbar: false,
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
