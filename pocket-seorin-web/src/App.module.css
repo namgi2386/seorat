@@ -64,13 +64,46 @@
 /* Screenshot */
 .gifWrapper {
   display: flex;
-  justify-content: center;
+  align-items: center;
+  gap: 2rem;
 }
 
 .previewGif {
   max-height: 320px;
   border-radius: 16px;
   object-fit: contain;
+  flex-shrink: 0;
+}
+
+.previewDesc {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.previewDescItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.previewDescItem strong {
+  font-size: 0.88rem;
+  color: #ddd;
+}
+
+.previewDescItem span {
+  font-size: 0.82rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.previewNote {
+  font-size: 0.78rem;
+  color: #444;
+  padding-top: 0.8rem;
+  border-top: 1px solid #1e1e1e;
+  line-height: 1.6;
 }
 
 /* Features */

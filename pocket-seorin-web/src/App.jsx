@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import styles from './App.module.css';
-import seorinGif from '../assets/seorin-boxing.gif';
+import { useState } from "react";
+import styles from "./App.module.css";
+import seorinGif from "../assets/seorin-boxing.gif";
 
-const WIN_URL = 'https://github.com/namgi2386/seorat/releases/download/v1.1.0/pocket-seorin-win.zip';
-const MAC_URL = 'https://github.com/namgi2386/seorat/releases/download/v1.1.0/pocket.seorin-1.0.0-arm64.dmg';
+const WIN_URL =
+  "https://github.com/namgi2386/seorat/releases/download/v1.1.0/pocket-seorin-win.zip";
+const MAC_URL =
+  "https://github.com/namgi2386/seorat/releases/download/v1.1.0/pocket.seorin-1.0.0-arm64.dmg";
 
 export default function App() {
   const [winOpen, setWinOpen] = useState(false);
@@ -19,12 +21,36 @@ export default function App() {
           className={styles.subtitleLink}
           target="_blank"
           rel="noreferrer"
-        >made by imnamgi (깃헙 이동하기)</a>
+        >
+          made by imnamgi (깃헙 이동하기)
+        </a>
       </header>
 
       <section className={styles.section}>
         <div className={styles.gifWrapper}>
-          <img src={seorinGif} alt="pocket seorin 미리보기" className={styles.previewGif} />
+          <img
+            src={seorinGif}
+            alt="pocket seorin 미리보기"
+            className={styles.previewGif}
+          />
+          <div className={styles.previewDesc}>
+            <div className={styles.previewDescItem}>
+              <strong>🖱️ 우클릭</strong>
+              <span>
+                크기 조절 (작게 / 중간 / 크게)
+                <br />및 앱 종료
+              </span>
+            </div>
+            <div className={styles.previewDescItem}>
+              <strong>🍊 5가지 포즈</strong>
+              <span>랜덤으로 자동 전환</span>
+            </div>
+            <p className={styles.previewNote}>
+              기능은 이게 전부입니다.
+              <br />
+              그냥 적당히 돌아다닙니다.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -55,40 +81,56 @@ export default function App() {
           <ol>
             <li>위 버튼을 눌러 zip 파일을 다운로드합니다.</li>
             <li>zip 파일의 압축을 해제합니다.</li>
-            <li><code>pocket seorin.exe</code>를 실행합니다.</li>
+            <li>
+              <code>pocket seorin.exe</code>를 실행합니다.
+            </li>
           </ol>
 
           <button
             className={styles.toggleBtn}
-            onClick={() => setWinOpen(v => !v)}
+            onClick={() => setWinOpen((v) => !v)}
           >
-            {winOpen ? '▲' : '▼'} &nbsp;
-            "Windows에서 PC를 보호했습니다" 경고가 뜨는 경우
+            {winOpen ? "▲" : "▼"} &nbsp; "Windows에서 PC를 보호했습니다" 경고가
+            뜨는 경우
           </button>
           {winOpen && (
             <div className={styles.toggleContent}>
-              <p>앱이 코드 서명되지 않아 SmartScreen 경고가 표시됩니다. 아래 순서로 실행하세요.</p>
+              <p>
+                앱이 코드 서명되지 않아 SmartScreen 경고가 표시됩니다. 아래
+                순서로 실행하세요.
+              </p>
               <ol>
-                <li>경고 창에서 <strong>"추가 정보"</strong> 클릭</li>
-                <li><strong>"실행"</strong> 버튼 클릭</li>
+                <li>
+                  경고 창에서 <strong>"추가 정보"</strong> 클릭
+                </li>
+                <li>
+                  <strong>"실행"</strong> 버튼 클릭
+                </li>
               </ol>
             </div>
           )}
 
-          <h3 style={{ marginTop: '2rem' }}>macOS</h3>
+          <h3 style={{ marginTop: "2rem" }}>macOS</h3>
           <button
             className={styles.toggleBtn}
-            onClick={() => setMacOpen(v => !v)}
+            onClick={() => setMacOpen((v) => !v)}
           >
-            {macOpen ? '▲' : '▼'} &nbsp;
-            "개발자를 확인할 수 없음" 경고가 뜨는 경우
+            {macOpen ? "▲" : "▼"} &nbsp; "개발자를 확인할 수 없음" 경고가 뜨는
+            경우
           </button>
           {macOpen && (
             <div className={styles.toggleContent}>
-              <p>Gatekeeper 보안 정책으로 인해 경고가 표시됩니다. 아래 순서로 실행하세요.</p>
+              <p>
+                Gatekeeper 보안 정책으로 인해 경고가 표시됩니다. 아래 순서로
+                실행하세요.
+              </p>
               <ol>
-                <li>앱 파일을 <strong>우클릭 → 열기</strong> 선택</li>
-                <li>경고 창에서 <strong>"열기"</strong> 클릭</li>
+                <li>
+                  앱 파일을 <strong>우클릭 → 열기</strong> 선택
+                </li>
+                <li>
+                  경고 창에서 <strong>"열기"</strong> 클릭
+                </li>
                 <li>이후에는 일반적으로 실행 가능합니다.</li>
               </ol>
             </div>
