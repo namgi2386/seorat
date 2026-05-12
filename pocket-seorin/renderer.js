@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-const W = window.innerWidth;
-const H = window.innerHeight;
+let W = window.innerWidth;
+let H = window.innerHeight;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(W, H);
@@ -33,8 +33,8 @@ const RUN_INDEX = 2;
 const STOP_INDICES = [0, 1, 3];
 const WALK_SPEED = 1.3;
 const RUN_SPEED = 2.2;
-const SPECIAL_MIN = 3000;
-const SPECIAL_MAX = 8000;
+const SPECIAL_MIN = 1500;
+const SPECIAL_MAX = 4000;
 
 const characters = new Array(GLB_NAMES.length).fill(null);
 let current = WALK_INDEX;
@@ -211,6 +211,17 @@ window.addEventListener('mouseup', async () => {
 canvas.addEventListener('contextmenu', e => {
   e.preventDefault();
   window.electronAPI.showContextMenu();
+});
+
+// 사이즈 변경
+window.electronAPI.onSizeChanged((w, h) => {
+  W = w;
+  H = h;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  winX = Math.min(winX, screenW - W);
+  winX = Math.max(winX, 0);
 });
 
 // 렌더 루프

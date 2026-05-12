@@ -9,4 +9,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setWindowPos: (x, y) => ipcRenderer.send('set-window-pos', x, y),
   getWindowPos: () => ipcRenderer.invoke('get-window-pos'),
   showContextMenu: () => ipcRenderer.send('show-context-menu'),
+  onSizeChanged: (cb) => ipcRenderer.on('size-changed', (_e, w, h) => cb(w, h)),
 });

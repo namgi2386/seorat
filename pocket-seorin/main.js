@@ -2,13 +2,18 @@ const { app, BrowserWindow, ipcMain, Menu, screen } = require('electron');
 const path = require('path');
 const { pathToFileURL } = require('url');
 
-const WIN_W = 70;
-const WIN_H = 105;
+const SIZES = {
+  small:  { w: 70,  h: 105 },
+  medium: { w: 130, h: 210 },
+  large:  { w: 200, h: 320 },
+};
 
+let currentSize = 'large';
 let win;
 
 function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  const { w, h } = SIZES[currentSize];
 
   const assetsPath = app.isPackaged
     ? path.join(process.resourcesPath, '3d-assets')
@@ -17,14 +22,14 @@ function createWindow() {
   process.env.ASSETS_BASE_URL = pathToFileURL(assetsPath).href;
   process.env.SCREEN_W = String(width);
   process.env.SCREEN_H = String(height);
-  process.env.WIN_X = String(width - WIN_W - 20);
-  process.env.WIN_Y = String(height - WIN_H - 20);
+  process.env.WIN_X = String(width - w - 20);
+  process.env.WIN_Y = String(height - h - 20);
 
   win = new BrowserWindow({
-    width: WIN_W,
-    height: WIN_H,
-    x: width - WIN_W - 20,
-    y: height - WIN_H - 20,
+    width: w,
+    height: h,
+    x: width - w - 20,
+    y: height - h - 20,
     transparent: true,
     frame: false,
     alwaysOnTop: true,
@@ -40,6 +45,13 @@ function createWindow() {
   win.loadFile('index.html');
 }
 
+function changeSize(size) {
+  currentSize = size;
+  const { w, h } = SIZES[size];
+  win.setSize(w, h);
+  win.webContents.send('size-changed', w, h);
+}
+
 app.whenReady().then(createWindow);
 app.on('window-all-closed', () => app.quit());
 
@@ -51,6 +63,15 @@ ipcMain.handle('get-window-pos', () => win.getPosition());
 
 ipcMain.on('show-context-menu', () => {
   Menu.buildFromTemplate([
+    {
+      label: '크기',
+      submenu: [
+        { label: '작게',  type: 'radio', checked: currentSize === 'small',  click: () => changeSize('small')  },
+        { label: '중간',  type: 'radio', checked: currentSize === 'medium', click: () => changeSize('medium') },
+        { label: '크게',  type: 'radio', checked: currentSize === 'large',  click: () => changeSize('large')  },
+      ],
+    },
+    { type: 'separator' },
     { label: '종료', click: () => app.quit() },
   ]).popup({ window: win });
 });
