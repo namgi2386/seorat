@@ -2,7 +2,7 @@ import { useState } from 'react';
 import styles from './App.module.css';
 import seorinGif from '../assets/seorin-boxing.gif';
 
-const WIN_URL = 'https://github.com/namgi2386/seorat/releases/download/v1.0.0/pocket-seorin-win.zip';
+const WIN_URL = 'https://github.com/namgi2386/seorat/releases/download/v1.1.0/pocket-seorin-win.zip';
 
 export default function App() {
   const [winOpen, setWinOpen] = useState(false);

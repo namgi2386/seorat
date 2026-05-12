@@ -1,0 +1,45 @@
+name: Build macOS
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        working-directory: pocket-seorin
+        run: npm install
+
+      - name: Build macOS
+        working-directory: pocket-seorin
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: npm run build:mac
+
+      - name: Upload .dmg to Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pocket-seorin/dist/*.dmg
+
+      - name: Upload .dmg as artifact (workflow_dispatch용)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pocket-seorin-mac
+          path: pocket-seorin/dist/*.dmg
+          retention-days: 7
