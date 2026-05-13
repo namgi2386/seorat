@@ -1,0 +1,35 @@
+name: Test macOS App
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-mac:
+    runs-on: macos-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        working-directory: pocket-seorin
+        run: npm install
+
+      - name: Build renderer bundle
+        working-directory: pocket-seorin
+        run: npm run build:renderer
+
+      - name: Run app (test mode, 10초 자동 종료)
+        working-directory: pocket-seorin
+        env:
+          POCKET_SEORIN_TEST: '1'
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          npx electron . 2>&1
+          echo "종료 코드: $?"

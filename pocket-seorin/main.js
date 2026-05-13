@@ -48,6 +48,18 @@ function createWindow() {
   });
 
   win.loadFile('index.html');
+
+  // 테스트 모드: renderer 콘솔 → stdout 포워딩 + 10초 후 자동 종료
+  if (process.env.POCKET_SEORIN_TEST) {
+    win.webContents.on('console-message', (_e, level, msg) => {
+      const tag = level >= 3 ? '[Renderer ERROR]' : '[Renderer]';
+      console.log(`${tag} ${msg}`);
+    });
+    setTimeout(() => {
+      console.log('[Test] 10초 경과 — 앱 정상 실행 완료');
+      app.quit();
+    }, 10000);
+  }
 }
 
 function changeSize(size) {

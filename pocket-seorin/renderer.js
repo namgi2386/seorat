@@ -67,6 +67,7 @@ function sendPos(x, y) {
 const loader = new GLTFLoader();
 const baseUrl = window.electronAPI.assetsBaseUrl;
 
+console.log('[Renderer] GLB 로드 시작');
 Promise.all(
   GLB_NAMES.map((name, i) =>
     new Promise(resolve =>
@@ -90,6 +91,7 @@ Promise.all(
     )
   )
 ).then(() => {
+  console.log('[Renderer] 모든 GLB 로드 완료 — 애니메이션 시작');
   setupCamera();
   startWalking();
   scheduleSpecial();
