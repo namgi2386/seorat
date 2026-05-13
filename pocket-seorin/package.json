@@ -4,7 +4,10 @@
   "description": "Always-on-top 3D character overlay",
   "main": "main.js",
   "scripts": {
+    "build:renderer": "esbuild renderer.js --bundle --format=esm --outfile=renderer.bundle.js",
+    "prestart": "npm run build:renderer",
     "start": "electron .",
+    "prebuild": "npm run build:renderer",
     "build:win": "electron-builder --win",
     "build:mac": "electron-builder --mac",
     "pack:win": "electron-builder --win --dir && powershell Compress-Archive -Path dist/win-unpacked/* -DestinationPath dist/pocket-seorin-win.zip -Force"
@@ -18,7 +21,7 @@
     },
     "files": [
       "**/*",
-      "node_modules/three/examples/**"
+      "!renderer.js"
     ],
     "extraResources": [
       {
@@ -40,6 +43,7 @@
   },
   "devDependencies": {
     "electron": "^33.0.0",
-    "electron-builder": "^25.0.0"
+    "electron-builder": "^25.0.0",
+    "esbuild": "^0.25.0"
   }
 }

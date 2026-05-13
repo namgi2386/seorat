@@ -121,18 +121,47 @@ export default function App() {
           {macOpen && (
             <div className={styles.toggleContent}>
               <p>
-                Gatekeeper 보안 정책으로 인해 경고가 표시됩니다. 아래 순서로
-                실행하세요.
+                코드 서명이 없어 macOS가 앱을 차단합니다.
+                <br />
+                <strong>Terminal</strong>을 열고 아래 명령어를 실행하세요.
               </p>
-              <ol>
-                <li>
-                  앱 파일을 <strong>우클릭 → 열기</strong> 선택
-                </li>
-                <li>
-                  경고 창에서 <strong>"열기"</strong> 클릭
-                </li>
-                <li>이후에는 일반적으로 실행 가능합니다.</li>
-              </ol>
+              <p>앱을 Applications 폴더로 이동한 경우:</p>
+              <code
+                style={{
+                  display: "block",
+                  background: "#0d0d0d",
+                  padding: "0.6rem 0.8rem",
+                  borderRadius: "6px",
+                  fontSize: "0.82rem",
+                  color: "#ccc",
+                  marginTop: "0.3rem",
+                }}
+              >
+                xattr -cr /Applications/pocket\ seorin.app
+              </code>
+              <p style={{ marginTop: "0.75rem" }}>다운로드 폴더에 있는 경우:</p>
+              <code
+                style={{
+                  display: "block",
+                  background: "#0d0d0d",
+                  padding: "0.6rem 0.8rem",
+                  borderRadius: "6px",
+                  fontSize: "0.82rem",
+                  color: "#ccc",
+                  marginTop: "0.3rem",
+                }}
+              >
+                xattr -cr ~/Downloads/pocket\ seorin.app
+              </code>
+              <p
+                style={{
+                  marginTop: "0.75rem",
+                  color: "#888",
+                  fontSize: "0.8rem",
+                }}
+              >
+                명령어 실행 후 앱을 다시 실행하면 정상 동작합니다.
+              </p>
             </div>
           )}
         </div>
